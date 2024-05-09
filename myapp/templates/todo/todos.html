@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ListApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .htmx-swapping {
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+
+        body {
+            background-image: none;
+            background-color: #f0f0f0;
+        }
+
+        .custom-link {
+            font-size: 2.5rem;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-r from-blue-200 to-cyan-400">
+
+<nav class="flex justify-center items-center px-4 py-6 text-center bg-cyan-500 text-purple-900">
+    <a href="/" class="custom-link">ListApp</a>
+</nav>
+
+<div class="w-4/5 my-6 mx-auto p-2 lg:p-10 bg-white rounded-xl">
+  
+    <form class="flex flex-col md:flex-row mb-6 space-y-4 md:space-y-0 md:space-x-4" hx-post="/add-todo/" hx-target="#todos" hx-swap="afterend">
+        <input type="text" name="title" class="title flex-1 px-4 py-3 bg-gray-200 rounded-xl" placeholder="Type your task here..">
+        <button class="p-3 rounded-xl text-white bg-blue-400 hover:bg-blue-600 md:w-auto">+</button>
+    </form>
+
+
+    <div class="flex py-3 rounded-xl bg-gray-100">
+        <div class="w-4/5">
+            <p class="px-6 text-xs font-medium text-gray-500 uppercase">Task</p>
+        </div>
+        <div class="hidden md:block w-1/5 px-6 text-right">
+            <p class="text-xs font-medium text-gray-500 uppercase">Actions</p>
+        </div>
+    </div>
+    
+    <div class="divide-y divide-gray-200" id="todos">
+        {% for todo in todos %}
+            <article class="flex{% if todo.is_done %} bg-green-50{% endif %}">
+                <div class="w-4/5 py-3">
+                    <p 
+                        class="px-6 text-xs text-gray-900"
+                        hx-get="/edit/{{ todo.id }}/"
+                        hx-target="this"
+                        hx-swap="outerHTML"
+                    >
+                        {{ todo.title }}
+                    </p>
+                </div>
+
+                <div class="w-1/5 px-6 py-3 flex justify-end space-x-4">
+                    {% if not todo.is_done %}
+                        <form
+                            hx-put="/update/{{ todo.id }}/"
+                            hx-target="closest article"
+                            hx-swap="outerHTML"
+                        >
+                            <button class="text-blue-500 hover:text-blue-900" type="submit">
+                                <i class="fas fa-check"></i> 
+                            </button>
+                        </form>
+                    {% else %}
+                        <form
+                            hx-put="/update/{{ todo.id }}/"
+                            hx-target="closest article"
+                            hx-swap="outerHTML"
+                        >
+                            <button class="text-gray-500 hover:text-gray-800" type="submit">
+                                <i class="fas fa-times"></i> 
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <a 
+                        href="#" 
+                        class="text-gray-500 hover:text-gray-800"
+                        hx-confirm="Are you sure?"
+                        hx-target="closest article"
+                        hx-swap="outerHTML swap:1s"
+                        hx-delete="/delete/{{ todo.id }}/"
+                    >
+                        <i class="fas fa-trash-alt"></i> 
+                    </a>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+</div>
+
+
+<script src="https://unpkg.com/htmx.org@1.6.1"></script>
+<script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    });
+
+    document.body.addEventListener('htmx:afterRequest', (event) => {
+        document.querySelector("input.title").value = '';
+    });
+</script>
+
+</body>
+</html>
