@@ -5,12 +5,12 @@
 
 -  Django 
 -  Docker
--  HTMX 
--  Tailwind
 -  Python
 -  JavaScript 
--  HTML
+-  HTMX 
 -  CSS
+-  Tailwind
+-  HTML
 <br>
 <br>
 
